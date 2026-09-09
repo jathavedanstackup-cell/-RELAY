@@ -1,0 +1,6 @@
+{
+  "name": "RELAY",
+  "description": "Autonomous life-administration product. Give AI the problem. Get back the outcome.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
