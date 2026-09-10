@@ -57,7 +57,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode, onAuthenticated, onNav
           <form onSubmit={handleSubmit} className="space-y-4">
             <label className="block space-y-1.5">
               <span className="text-xs font-semibold text-on-surface">Email</span>
-              <input value={email} onChange={event => setEmail(event.target.value)} type="email" autoComplete="email" required className="w-full px-3 py-2.5 rounded-xl border border-surface-variant bg-surface-container-low text-sm text-on-surface focus:outline-none focus:border-primary" />
+              <input value={email} onChange={event => setEmail(event.target.value)} type="text" autoComplete="email" required className="w-full px-3 py-2.5 rounded-xl border border-surface-variant bg-surface-container-low text-sm text-on-surface focus:outline-none focus:border-primary" />
             </label>
             <label className="block space-y-1.5">
               <span className="text-xs font-semibold text-on-surface">Password</span>
