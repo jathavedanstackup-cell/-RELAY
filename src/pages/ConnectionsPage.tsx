@@ -49,8 +49,9 @@ export const ConnectionsPage: React.FC<ConnectionsPageProps> = ({
         </div>
 
         <button
-          onClick={() => alert('Opening new provider integration drawer...')}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-on-primary rounded-xl text-xs font-bold hover:bg-primary-container active:scale-[0.98] transition-all shadow-sm"
+          disabled
+          title="Provider creation is unavailable from the current backend contract"
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-surface-container text-secondary rounded-xl text-xs font-bold cursor-not-allowed"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Connect New Service</span>

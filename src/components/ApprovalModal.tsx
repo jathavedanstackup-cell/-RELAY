@@ -7,6 +7,7 @@ interface ApprovalModalProps {
   onClose: () => void;
   approval: ApprovalAction;
   onApprove: () => void;
+  onReject: () => void;
   onOpenAlternatives: () => void;
 }
 
@@ -15,6 +16,7 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
   onClose,
   approval,
   onApprove,
+  onReject,
   onOpenAlternatives
 }) => {
   const [timeLeft, setTimeLeft] = useState(approval.expiresInSeconds || 600);
@@ -56,6 +58,15 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
               <Clock className="w-3.5 h-3.5" />
               <span>{formattedTime}</span>
             </div>
+            <button
+              onClick={() => {
+                onReject();
+                onClose();
+              }}
+              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl border border-error/30 text-error hover:bg-error-container/30 text-xs font-semibold transition-colors"
+            >
+              Reject
+            </button>
             <button
               onClick={onClose}
               className="p-1 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container transition-colors"
@@ -142,11 +153,13 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
         {/* Action Footer */}
         <div className="px-6 py-4 bg-surface-container-low border-t border-surface-variant flex flex-col sm:flex-row items-center justify-between gap-3">
           <button
+              disabled={!approval.flightDetails}
+              title={!approval.flightDetails ? 'Alternatives are unavailable from the current backend contract' : 'Review alternatives'}
             onClick={() => {
               onClose();
               onOpenAlternatives();
             }}
-            className="w-full sm:w-auto px-4 py-2 rounded-xl border border-surface-variant bg-surface-container-lowest text-secondary hover:text-on-surface hover:bg-surface-container text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+            className="w-full sm:w-auto px-4 py-2 rounded-xl border border-surface-variant bg-surface-container-lowest text-secondary hover:text-on-surface hover:bg-surface-container text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span>Review Alternatives</span>
             <ChevronRight className="w-3.5 h-3.5" />

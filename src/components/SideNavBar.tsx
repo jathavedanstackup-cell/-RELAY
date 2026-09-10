@@ -48,7 +48,7 @@ export const SideNavBar: React.FC<SideNavBarProps> = ({
         <nav className="space-y-1">
           {/* Mission Control */}
           <button
-            onClick={() => onNavigate('/cases/1048')}
+            onClick={() => onNavigate('/cases')}
             className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
               currentSection === 'mission_control'
                 ? 'bg-surface-container text-primary'
@@ -106,7 +106,7 @@ export const SideNavBar: React.FC<SideNavBarProps> = ({
           <button
             onClick={() => {
               if (onOpenTelemetry) onOpenTelemetry();
-              else onNavigate('/cases/1048');
+              else onNavigate('/cases');
             }}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
               currentSection === 'telemetry'
@@ -138,7 +138,7 @@ export const SideNavBar: React.FC<SideNavBarProps> = ({
 
           {/* Audit & Proofs */}
           <button
-            onClick={() => onNavigate('/cases/1048/outcome')}
+            onClick={() => onNavigate('/cases')}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
               currentSection === 'audit'
                 ? 'bg-surface-container text-primary'

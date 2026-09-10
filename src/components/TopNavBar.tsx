@@ -1,18 +1,22 @@
 import React from 'react';
-import { Plus, Search, Bell, SlidersHorizontal, ArrowRight } from 'lucide-react';
+import { Plus, Search, Bell, SlidersHorizontal, ArrowRight, LogOut } from 'lucide-react';
 
 interface TopNavBarProps {
   activeTab: 'intake' | 'cases' | 'documents' | 'connections' | 'settings' | 'mission_control';
   onNavigate: (route: string) => void;
   onOpenCommandPalette: () => void;
   pendingApprovalsCount?: number;
+  casesCount?: number;
+  onLogout: () => void;
 }
 
 export const TopNavBar: React.FC<TopNavBarProps> = ({
   activeTab,
   onNavigate,
   onOpenCommandPalette,
-  pendingApprovalsCount = 1
+  pendingApprovalsCount = 0,
+  casesCount = 0,
+  onLogout
 }) => {
   return (
     <header className="sticky top-0 z-50 flex justify-between items-center w-full px-4 sm:px-6 lg:px-8 h-16 border-b border-surface-variant bg-surface-container-lowest/95 backdrop-blur-md">
@@ -57,13 +61,13 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
             }`}
           >
             <span>My Cases</span>
-            <span className="px-1.5 py-0.2 rounded-full bg-surface-container-high text-secondary text-[10px] font-mono font-medium">
-              4
+              <span className="px-1.5 py-0.2 rounded-full bg-surface-container-high text-secondary text-[10px] font-mono font-medium">
+                {casesCount}
             </span>
           </button>
 
           <button
-            onClick={() => onNavigate('/cases/1048')}
+            onClick={() => onNavigate('/cases')}
             className={`pb-1 text-xs font-semibold transition-colors flex items-center gap-1.5 border-b-2 ${
               activeTab === 'mission_control'
                 ? 'text-primary border-primary'
@@ -72,9 +76,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
           >
             <span className="material-symbols-outlined text-[16px]">space_dashboard</span>
             <span>Mission Control</span>
-            {pendingApprovalsCount > 0 && (
-              <span className="w-2 h-2 rounded-full bg-primary-container pulse-amber"></span>
-            )}
+              {pendingApprovalsCount > 0 && <span className="w-2 h-2 rounded-full bg-primary-container pulse-amber"></span>}
           </button>
 
           <button
@@ -180,6 +182,14 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
             </div>
             <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-tertiary-container border-2 border-surface-container-lowest"></span>
           </div>
+          <button
+            aria-label="Sign out"
+            onClick={onLogout}
+            className="p-2 rounded-xl text-secondary hover:bg-surface-container hover:text-on-surface transition-colors"
+            title="Sign out"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </header>

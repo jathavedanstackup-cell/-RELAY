@@ -58,21 +58,22 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
               Knowledge &amp; Evidence Vault
             </h1>
             <span className="px-2.5 py-0.5 rounded-full bg-surface-container text-xs font-mono font-bold text-secondary">
-              {documents.length} Artifacts Sealed
+              {documents.length} Backend Documents
             </span>
           </div>
           <p className="text-xs sm:text-sm text-secondary mt-1">
-            Immutable repository of user-submitted evidence, airline e-tickets, accommodation vouchers, and statutory filings.
+            Documents currently exposed by the RELAY backend.
           </p>
         </div>
 
         <div>
           <label className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-on-primary rounded-xl text-xs font-bold hover:bg-primary-container active:scale-[0.98] transition-all shadow-sm cursor-pointer">
             <Upload className="w-3.5 h-3.5" />
-            <span>Upload New Evidence</span>
+            <span>Upload unavailable</span>
             <input
               type="file"
               onChange={handleFileInput}
+              disabled
               className="hidden"
             />
           </label>
@@ -88,9 +89,6 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
             className="px-3 py-1.5 rounded-xl border border-surface-variant bg-surface-container-lowest text-xs text-on-surface font-medium focus:outline-none"
           >
             <option value="all">All Cases</option>
-            <option value="1048">Case #1048 (Flight Cancellation)</option>
-            <option value="1049">Case #1049 (Insurance Burst Pipe)</option>
-            <option value="1027">Case #1027 (Security Deposit Return)</option>
           </select>
         </div>
 
@@ -137,7 +135,8 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
 
                   <td className="px-4 py-3.5 whitespace-nowrap">
                     <button
-                      onClick={() => onNavigate(`/cases/${doc.caseId}`)}
+                      onClick={() => doc.caseId && onNavigate(`/cases/${doc.caseId}`)}
+                      disabled={!doc.caseId}
                       className="font-mono font-bold text-primary hover:underline"
                     >
                       {doc.caseNumber}
@@ -168,9 +167,9 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
                       <Eye className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => alert(`Downloading artifact: ${doc.filename}`)}
-                      className="p-1.5 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container transition-colors"
-                      title="Download"
+                      disabled
+                      title="Download unavailable from the current backend contract"
+                      className="p-1.5 rounded-lg text-secondary/50 cursor-not-allowed"
                     >
                       <Download className="w-4 h-4" />
                     </button>

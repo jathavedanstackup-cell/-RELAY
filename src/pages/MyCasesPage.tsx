@@ -55,6 +55,29 @@ export const MyCasesPage: React.FC<MyCasesPageProps> = ({
   const attentionCount = cases.filter(c => c.status === 'needs_attention').length;
   const resolvedCount = cases.filter(c => c.status === 'resolved').length;
 
+  const getOperationalState = (item: CaseData) => {
+    if (item.dossierReady || item.verificationState === 'VERIFIED') {
+      return 'VERIFIED OUTCOME';
+    }
+    if (item.approval?.status === 'pending') {
+      return 'WAITING FOR YOUR APPROVAL';
+    }
+    if (item.verificationState === 'READY_FOR_NEXT_STEP') {
+      return 'READY FOR NEXT STEP';
+    }
+    if (item.status === 'planning' && item.activityFeed.some(activity => activity.agentName.toLowerCase().includes('recovery'))) {
+      return 'REPLANNING';
+    }
+    if (item.status === 'in_progress' || item.status === 'planning') {
+      const activeAgent = item.activityFeed.find(activity => activity.status === 'active')?.agentName;
+      return activeAgent ? `RUNNING - ${activeAgent}` : 'RUNNING';
+    }
+    if (item.status === 'needs_attention' || item.verificationState === 'NEEDS_ATTENTION') {
+      return 'RECOVERY REQUIRED';
+    }
+    return item.statusLabel;
+  };
+
   return (
     <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Header */}
@@ -193,6 +216,8 @@ export const MyCasesPage: React.FC<MyCasesPageProps> = ({
             const isWaiting = item.status === 'waiting_approval';
             const isResolved = item.status === 'resolved';
             const isAttention = item.status === 'needs_attention';
+            const operationalState = getOperationalState(item);
+            const isVerifiedOutcome = operationalState === 'VERIFIED OUTCOME';
 
             return (
               <div
@@ -214,7 +239,9 @@ export const MyCasesPage: React.FC<MyCasesPageProps> = ({
                       </span>
                       <span
                         className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                          isWaiting
+                          isVerifiedOutcome
+                            ? 'bg-tertiary-fixed text-on-tertiary-fixed'
+                            : isWaiting
                             ? 'bg-primary-fixed text-on-primary-fixed'
                             : isResolved
                             ? 'bg-tertiary-fixed text-on-tertiary-fixed'
@@ -223,11 +250,13 @@ export const MyCasesPage: React.FC<MyCasesPageProps> = ({
                             : 'bg-surface-container text-secondary'
                         }`}
                       >
-                        {item.statusLabel}
+                        {operationalState}
                       </span>
-                      <span className="text-[11px] font-mono text-secondary">
-                        Lead: {item.autonomousLead}
-                      </span>
+                      {item.autonomousLead && operationalState !== 'VERIFIED OUTCOME' && (
+                        <span className="text-[11px] font-mono text-secondary">
+                          Lead: {item.autonomousLead}
+                        </span>
+                      )}
                     </div>
 
                     <h3
@@ -242,7 +271,7 @@ export const MyCasesPage: React.FC<MyCasesPageProps> = ({
                     </p>
 
                     {/* Progress strip if in progress */}
-                    {!isResolved && (
+                    {!isResolved && !isVerifiedOutcome && (
                       <div className="flex items-center gap-3 pt-1">
                         <div className="w-36 h-1.5 bg-surface-container rounded-full overflow-hidden">
                           <div

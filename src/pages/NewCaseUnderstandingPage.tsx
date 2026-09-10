@@ -18,14 +18,20 @@ interface NewCaseUnderstandingPageProps {
   problemStatement: string;
   attachments: string[];
   onNavigate: (route: string) => void;
-  onLaunchExecution: (objectives: string[]) => void;
+  onLaunchExecution: (objectives: string[]) => void | Promise<void>;
+  isPlanning: boolean;
+  planningError: string | null;
+  onRetryPlanning: () => void;
 }
 
 export const NewCaseUnderstandingPage: React.FC<NewCaseUnderstandingPageProps> = ({
   problemStatement,
   attachments,
   onNavigate,
-  onLaunchExecution
+  onLaunchExecution,
+  isPlanning,
+  planningError,
+  onRetryPlanning
 }) => {
   const [objectives, setObjectives] = useState<string[]>([
     'Secure confirmed rebooking on earliest trans-Atlantic flight (JFK → LHR)',
@@ -50,8 +56,8 @@ export const NewCaseUnderstandingPage: React.FC<NewCaseUnderstandingPageProps> =
   };
 
   const handleStart = () => {
+    if (isPlanning) return;
     onLaunchExecution(objectives);
-    onNavigate('/cases/1048');
   };
 
   return (
@@ -232,16 +238,27 @@ export const NewCaseUnderstandingPage: React.FC<NewCaseUnderstandingPageProps> =
       <div className="pt-4 border-t border-surface-variant flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-xs text-secondary font-mono">
           <Clock className="w-4 h-4" />
-          <span>Estimated execution duration: 4 minutes 20 seconds</span>
+          <span>{isPlanning ? 'RELAY is planning…' : 'Estimated execution duration: 4 minutes 20 seconds'}</span>
         </div>
 
-        <button
-          onClick={handleStart}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 bg-primary text-on-primary rounded-xl text-sm font-bold hover:bg-primary-container active:scale-[0.98] transition-all shadow-md"
-        >
-          <span>Start Execution → Launch Mission Control</span>
-          <ArrowRight className="w-4 h-4" />
-        </button>
+        <div className="w-full sm:w-auto flex flex-col items-stretch gap-2">
+          {planningError && (
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-error/30 bg-error-container/40 px-3 py-2 text-xs text-on-error-container">
+              <span>{planningError}</span>
+              <button onClick={onRetryPlanning} disabled={isPlanning} className="font-bold underline disabled:opacity-50">
+                Retry planning
+              </button>
+            </div>
+          )}
+          <button
+            onClick={handleStart}
+            disabled={isPlanning}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 bg-primary text-on-primary rounded-xl text-sm font-bold hover:bg-primary-container active:scale-[0.98] transition-all shadow-md disabled:opacity-60 disabled:cursor-wait"
+          >
+            <span>{isPlanning ? 'Planning…' : 'Start Execution → Launch Mission Control'}</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   );

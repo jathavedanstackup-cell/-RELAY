@@ -6,3 +6,8 @@ coverage/
 *.log
 .env*
 !.env.example
+backend/.env
+*.sqlite3
+__pycache__/
+*.py[cod]
+backend/.venv/

@@ -29,8 +29,14 @@ interface MissionControlPageProps {
   caseData: CaseData;
   onNavigate: (route: string) => void;
   onApproveAction: (approvalId: string) => void;
+  onRejectAction: (approvalId: string) => void;
   onPauseCase: () => void;
   onResumeCase: () => void;
+  onRunAutonomous: () => void;
+  onExecuteTask: (taskId: string) => void;
+  onVerifyTask: (taskId: string) => void;
+  onRecoverCase: () => void;
+  isBusy: boolean;
   onOpenApprovalModal: () => void;
   onOpenAlternativesModal: () => void;
   onOpenTelemetryJson: () => void;
@@ -41,23 +47,55 @@ export const MissionControlPage: React.FC<MissionControlPageProps> = ({
   caseData,
   onNavigate,
   onApproveAction,
+  onRejectAction,
   onPauseCase,
   onResumeCase,
+  onRunAutonomous,
+  onExecuteTask,
+  onVerifyTask,
+  onRecoverCase,
+  isBusy,
   onOpenApprovalModal,
   onOpenAlternativesModal,
   onOpenTelemetryJson,
   onOpenDocPreview
 }) => {
-  const [expandedTaskId, setExpandedTaskId] = useState<string | null>('t1');
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
   const isPaused = caseData.status === 'paused';
   const approval = caseData.approval;
   const isApproved = approval?.status === 'approved';
+  const verificationState = caseData.verificationState || 'NEEDS_ATTENTION';
+  const activeActivity = caseData.activityFeed.find(activity => activity.status === 'active');
+  const currentTask = caseData.tasks.find(task => ['in_progress', 'queued', 'pending_approval'].includes(task.status));
+  const headerState = caseData.dossierReady || verificationState === 'VERIFIED'
+    ? 'VERIFIED OUTCOME'
+    : approval?.status === 'pending'
+      ? 'WAITING FOR YOUR APPROVAL'
+      : verificationState === 'READY_FOR_NEXT_STEP'
+        ? 'READY FOR NEXT STEP'
+        : caseData.status === 'planning' && caseData.activityFeed.some(activity => activity.agentName.toLowerCase().includes('recovery'))
+          ? 'REPLANNING'
+          : caseData.status === 'needs_attention'
+            ? 'RECOVERY REQUIRED'
+            : verificationState;
+  const headerStage = caseData.stages.find(stage => stage.status === 'active') || caseData.stages.find(stage => stage.status === 'pending');
+  const headerAgent = headerState === 'VERIFIED OUTCOME'
+    ? caseData.activityFeed.find(activity => activity.agentName.toLowerCase().includes('verification'))?.agentName
+    : approval?.status === 'pending'
+      ? 'Human Authorization Boundary'
+      : activeActivity?.agentName;
+  const headerAction = headerState === 'VERIFIED OUTCOME'
+    ? caseData.verificationSummary
+    : approval?.status === 'pending'
+      ? approval.title
+      : activeActivity?.description || currentTask?.title;
 
   return (
     <div className="w-full space-y-6 pb-16">
       {/* Top Breadcrumb & Controls Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-surface-variant">
-        <div className="space-y-1">
+        <div className="min-w-0 flex-1">
+          <div className="space-y-1">
           <div className="flex items-center gap-2 text-xs font-mono text-secondary">
             <button onClick={() => onNavigate('/cases')} className="hover:text-on-surface">Cases</button>
             <span>/</span>
@@ -78,16 +116,39 @@ export const MissionControlPage: React.FC<MissionControlPageProps> = ({
                   : 'bg-primary-fixed text-on-primary-fixed'
               }`}
             >
-              {isPaused ? 'PAUSED' : isApproved ? 'RESOLVED' : 'IN PROGRESS'}
+                {isPaused ? 'PAUSED' : headerState}
             </span>
             <span className="text-xs font-mono text-secondary hidden sm:inline">
               Lead: {caseData.autonomousLead}
             </span>
           </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] font-mono text-secondary min-w-0">
+            {headerStage && <span>{headerStage.label}</span>}
+            {headerAgent && <span>Agent: <strong className="text-on-surface font-normal">{headerAgent}</strong></span>}
+            {headerAction && <span className="min-w-0 truncate max-w-full">Next: <strong className="text-on-surface font-normal">{headerAction}</strong></span>}
+          </div>
         </div>
 
         {/* Action Controls */}
         <div className="flex items-center gap-2.5">
+          <button
+            onClick={onRunAutonomous}
+            disabled={isBusy || isPaused}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-on-primary text-xs font-bold disabled:opacity-50"
+          >
+            <Play className="w-3.5 h-3.5" />
+            <span>{isBusy ? 'Working...' : 'Run Autonomous Loop'}</span>
+          </button>
+          <button
+            onClick={onRecoverCase}
+            disabled={isBusy}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-surface-variant bg-surface-container-low text-secondary text-xs font-semibold disabled:opacity-50"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Recover</span>
+          </button>
           {isPaused ? (
             <button
               onClick={onResumeCase}
@@ -172,9 +233,6 @@ export const MissionControlPage: React.FC<MissionControlPageProps> = ({
                   <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary">
                     Human Authorization Boundary
                   </span>
-                  <span className="px-2 py-0.2 rounded bg-primary-fixed text-on-primary-fixed text-[10px] font-mono font-bold">
-                    Expires in 10m 42s
-                  </span>
                 </div>
                 <h3 className="text-base font-bold text-on-surface">
                   {approval.title}
@@ -185,16 +243,26 @@ export const MissionControlPage: React.FC<MissionControlPageProps> = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={onOpenAlternativesModal}
-                className="px-3.5 py-1.5 rounded-xl border border-surface-variant bg-surface-container-lowest text-secondary hover:text-on-surface text-xs font-semibold hover:bg-surface-container transition-colors"
+                disabled={!approval.flightDetails}
+                title={!approval.flightDetails ? 'Alternatives are unavailable from the current backend contract' : 'Review alternatives'}
+                className="px-3.5 py-1.5 rounded-xl border border-surface-variant bg-surface-container-lowest text-secondary hover:text-on-surface text-xs font-semibold hover:bg-surface-container transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Review Alternatives
               </button>
               <button
                 onClick={() => onApproveAction(approval.id)}
+                disabled={isBusy}
                 className="px-5 py-1.5 rounded-xl bg-primary text-on-primary text-xs font-bold hover:bg-primary-container active:scale-[0.98] transition-all shadow-md flex items-center gap-1.5"
               >
-                <span>Approve Action &amp; Rebook (+$84.00)</span>
+                <span>Approve Action</span>
                 <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => onRejectAction(approval.id)}
+                disabled={isBusy}
+                className="px-3.5 py-1.5 rounded-xl border border-error/30 text-error text-xs font-semibold disabled:opacity-50"
+              >
+                Reject
               </button>
             </div>
           </div>
@@ -238,19 +306,13 @@ export const MissionControlPage: React.FC<MissionControlPageProps> = ({
               <CheckCircle2 className="w-4 h-4" />
             </div>
             <div>
-              <h4 className="text-xs font-bold text-on-surface">Action Authorized &amp; Ticketed</h4>
+              <h4 className="text-xs font-bold text-on-surface">Action Authorized</h4>
               <p className="text-[11px] text-secondary font-mono">
-                British Airways BA178 PNR #X99KLR ticketed. Delta +$84 appended to EU261 claim.
+                Backend approval recorded. External outcome remains unverified until evidence confirms it.
               </p>
             </div>
           </div>
-          <button
-            onClick={() => onOpenDocPreview('BA178_eTicket_receipt_confirmed.pdf')}
-            className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
-          >
-            <span>View E-Ticket</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </button>
+          <span className="text-xs font-semibold text-secondary">No artifact returned by backend</span>
         </div>
       )}
 
@@ -259,13 +321,13 @@ export const MissionControlPage: React.FC<MissionControlPageProps> = ({
         <div className="flex items-center gap-2.5">
           <span className="w-2.5 h-2.5 rounded-full bg-primary-container pulse-amber shrink-0"></span>
           <span className="font-semibold text-on-surface truncate">
-            {caseData.currentAction?.description}
+            {caseData.currentAction?.description || 'No active agent action reported.'}
           </span>
         </div>
         <div className="flex items-center gap-4 text-secondary text-[11px] shrink-0">
-          <span>Agent: <strong className="text-on-surface font-normal">{caseData.currentAction?.agentName}</strong></span>
-          <span>Elapsed: <strong>{caseData.currentAction?.elapsed}</strong></span>
-          <span>Latency: <strong className="text-tertiary-container">{caseData.currentAction?.latency}</strong></span>
+          <span>Agent: <strong className="text-on-surface font-normal">{caseData.currentAction?.agentName || 'Unavailable'}</strong></span>
+          <span>Elapsed: <strong>{caseData.currentAction?.elapsed || 'Unavailable'}</strong></span>
+          <span>Latency: <strong className="text-tertiary-container">{caseData.currentAction?.latency || 'Unavailable'}</strong></span>
         </div>
       </div>
 
@@ -281,11 +343,11 @@ export const MissionControlPage: React.FC<MissionControlPageProps> = ({
                   Deconstructed Situation Plan
                 </h2>
                 <p className="text-xs text-on-surface font-semibold mt-0.5">
-                  4 Autonomous Workstreams Active
+                  {caseData.tasks.length} backend task{caseData.tasks.length === 1 ? '' : 's'}
                 </p>
               </div>
               <span className="text-[11px] font-mono text-secondary">
-                Autonomous Lead: Relay Logistics Pod A
+                Autonomous Lead: {caseData.autonomousLead}
               </span>
             </div>
 
@@ -358,6 +420,24 @@ export const MissionControlPage: React.FC<MissionControlPageProps> = ({
                               className="px-3 py-1 rounded-lg bg-primary text-on-primary text-xs font-bold hover:bg-primary-container"
                             >
                               Authorize Action
+                            </button>
+                          )}
+                          {task.status === 'queued' && (
+                            <button
+                              onClick={() => onExecuteTask(task.id)}
+                              disabled={isBusy}
+                              className="px-3 py-1 rounded-lg border border-primary text-primary text-xs font-bold disabled:opacity-50"
+                            >
+                              Execute Task
+                            </button>
+                          )}
+                          {task.status === 'completed' && (
+                            <button
+                              onClick={() => onVerifyTask(task.id)}
+                              disabled={isBusy}
+                              className="px-3 py-1 rounded-lg border border-tertiary-container text-tertiary-container text-xs font-bold disabled:opacity-50"
+                            >
+                              Verify Task
                             </button>
                           )}
                         </div>

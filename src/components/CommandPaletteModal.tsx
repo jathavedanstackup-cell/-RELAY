@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, X, ArrowRight, LayoutDashboard, Clock, FolderLock, FileCheck2, Settings, ShieldAlert, Sparkles } from 'lucide-react';
+import { Search, X, ArrowRight, Clock, FolderLock, Settings, ShieldAlert, Sparkles } from 'lucide-react';
 
 interface CommandPaletteModalProps {
   isOpen: boolean;
@@ -40,22 +40,6 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       action: () => onNavigate('/')
     },
     {
-      id: 'case-1048',
-      category: 'Cases',
-      title: 'Jump to Case #1048 (Flight Cancellation & EU261)',
-      subtitle: 'Currently in progress · 60% · Awaiting fare delta approval',
-      icon: LayoutDashboard,
-      action: () => onNavigate('/cases/1048')
-    },
-    {
-      id: 'case-outcome',
-      category: 'Cases',
-      title: 'View Outcome Dossier (Case #1048)',
-      subtitle: 'Inspect verified outcomes, receipts, and flight e-ticket',
-      icon: FileCheck2,
-      action: () => onNavigate('/cases/1048/outcome')
-    },
-    {
       id: 'approvals',
       category: 'Navigation',
       title: 'Approvals Required (1 pending)',
@@ -75,7 +59,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       id: 'docs',
       category: 'Navigation',
       title: 'Open Documents & Evidence Vault',
-      subtitle: 'Access 7 verified case artifacts and E-Tickets',
+      subtitle: 'Access backend-provided documents and evidence',
       icon: FolderLock,
       action: () => onNavigate('/documents')
     },
@@ -107,7 +91,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Search cases, commands, or enter Case # (e.g. 1048)..."
+            placeholder="Search cases, commands, or enter a case id..."
             className="w-full bg-transparent text-sm text-on-surface placeholder-secondary focus:outline-none"
             autoFocus
           />

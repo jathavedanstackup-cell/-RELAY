@@ -11,8 +11,10 @@ export type CaseStatus =
   | 'planning'
   | 'in_progress'
   | 'waiting_approval'
+  | 'waiting_external'
   | 'needs_attention'
   | 'paused'
+  | 'completed'
   | 'verified'
   | 'resolved'
   | 'failed';
@@ -23,8 +25,10 @@ export type TaskStatus =
   | 'in_progress'
   | 'pending_approval'
   | 'hold_confirmed'
+  | 'waiting_external'
   | 'completed'
-  | 'blocked';
+  | 'blocked'
+  | 'failed';
 
 export type LifecycleStage = 
   | 'understand'
@@ -51,6 +55,12 @@ export interface UserProfile {
   role: string;
 }
 
+export interface AuthUser {
+  id: number;
+  username: string;
+  email: string;
+}
+
 export interface Objective {
   id: string;
   text: string;
@@ -74,6 +84,7 @@ export interface Task {
 export interface ApprovalAction {
   id: string;
   caseId: string;
+  taskId?: string;
   title: string;
   subTitle: string;
   expiresInSeconds: number;
@@ -135,7 +146,7 @@ export interface OutcomeItem {
 export interface CaseOutcome {
   caseId: string;
   title: string;
-  status: 'resolved';
+  status: 'pending' | 'partial' | 'resolved' | 'failed';
   resolvedAt: string;
   headline: string;
   supportingText: string;
@@ -159,6 +170,8 @@ export interface CaseOutcome {
     icon: string;
     downloadable?: boolean;
   }[];
+  verified: boolean;
+  verificationSummary?: string;
 }
 
 export interface CaseData {
@@ -207,6 +220,9 @@ export interface CaseData {
   activityFeed: ActivityEvent[];
   documentsCount: number;
   dossierReady?: boolean;
+  verificationState?: 'READY_FOR_NEXT_STEP' | 'NEEDS_APPROVAL' | 'NEEDS_ATTENTION' | 'VERIFIED' | 'FAILED';
+  verificationSummary?: string;
+  evidenceCount?: number;
 }
 
 export interface DocumentItem {

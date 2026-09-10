@@ -66,15 +66,16 @@ export const OutcomeDossierPage: React.FC<OutcomeDossierPageProps> = ({
             </h1>
             <span className="px-2.5 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-xs font-mono font-bold flex items-center gap-1">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>RESOLVED</span>
+              <span>{outcome.verified ? 'VERIFIED' : outcome.status.toUpperCase()}</span>
             </span>
           </div>
         </div>
 
         <div className="flex items-center gap-2.5">
           <button
-            onClick={() => alert('Exporting signed PDF resolution dossier with cryptographic proofs...')}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-surface-variant bg-surface-container-low hover:bg-surface-container text-xs font-semibold text-on-surface transition-colors"
+            disabled
+            title="Dossier export is unavailable from the current backend contract"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-surface-variant bg-surface-container text-xs font-semibold text-secondary cursor-not-allowed"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export Full Dossier (PDF)</span>
@@ -184,11 +185,11 @@ export const OutcomeDossierPage: React.FC<OutcomeDossierPageProps> = ({
               Executed Solutions &amp; Verified Results
             </h3>
             <p className="text-sm font-bold text-on-surface mt-0.5">
-              4 of 4 Delegated Workstreams Fulfilled
+              {outcome.outcomes.length} backend result{outcome.outcomes.length === 1 ? '' : 's'}
             </p>
           </div>
           <span className="text-xs font-mono text-tertiary-container font-semibold">
-            100% Cryptographic Match
+            {outcome.verified ? 'VERIFIED BY BACKEND' : 'NOT VERIFIED'}
           </span>
         </div>
 
@@ -285,8 +286,9 @@ export const OutcomeDossierPage: React.FC<OutcomeDossierPageProps> = ({
 
               {proof.downloadable && (
                 <button
-                  onClick={() => alert(`Downloading verified artifact: ${proof.title}`)}
-                  className="px-3 py-1 rounded-lg border border-surface-variant bg-surface-container-lowest text-secondary hover:text-on-surface hover:bg-surface-container font-mono text-[11px] flex items-center gap-1"
+                  disabled
+                  title="Artifact download is unavailable from the current backend contract"
+                  className="px-3 py-1 rounded-lg border border-surface-variant bg-surface-container text-secondary font-mono text-[11px] flex items-center gap-1 cursor-not-allowed"
                 >
                   <Download className="w-3 h-3" />
                   <span>Download Proof</span>
@@ -316,8 +318,9 @@ export const OutcomeDossierPage: React.FC<OutcomeDossierPageProps> = ({
 
         <div className="flex items-center gap-2.5">
           <button
-            onClick={() => alert('Shareable URL copied to clipboard: https://relay.ai/dossier/1048-verified')}
-            className="px-3.5 py-2 rounded-xl border border-surface-variant bg-surface-container-lowest text-secondary hover:text-on-surface text-xs font-semibold flex items-center gap-1.5"
+            disabled
+            title="Share links are unavailable from the current backend contract"
+            className="px-3.5 py-2 rounded-xl border border-surface-variant bg-surface-container text-secondary text-xs font-semibold flex items-center gap-1.5 cursor-not-allowed"
           >
             <Share2 className="w-3.5 h-3.5" />
             <span>Share Report</span>
